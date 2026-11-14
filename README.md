@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Slash
 
-## Getting Started
+App desktop no estilo Notion: páginas aninhadas, editor de blocos com menu de comandos (Ctrl+Espaço), emojis da Apple, ícones, capas, favoritos, lixeira e busca (Ctrl+K).
 
-First, run the development server:
+## Comandos
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # Next + Electron com recarregamento automático
+npm run build    # gera a interface estática em out/
+npm start        # abre o Electron usando out/
+npm run dist     # build + instalador Windows em release/
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Onde ficam os dados
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Tudo fica em `E:\SlashData` (configurável pela variável `SLASH_DATA_DIR`):
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `slash-documents.json`: páginas (com `.bak` da versão anterior a cada gravação)
+- `files/`: imagens e anexos enviados
+- `electron/`: dados internos do Electron/Chromium (cache etc.)
 
-## Learn More
+## Stack
 
-To learn more about Next.js, take a look at the following resources:
+- **Electron**: janela nativa com barra de título integrada; serve `out/` pelo protocolo `app://` e os anexos por `slash-file://`
+- **Next.js 16** (export estático) + **Tailwind CSS 4**
+- **BlockNote** como editor (em português)
+- **Zustand** para estado, persistido no disco via IPC (`electron/preload.cjs`)
+- **emoji-datasource-apple**: imagens dos emojis da Apple, empacotadas offline
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Estrutura
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+electron/          processo principal, preload e ícone
+scripts/           dev do Electron, cópia dos emojis, geração do ícone
+src/
+  app/             rotas (/documents?id=..., /preview?id=...)
+  components/
+    editor/        BlockNote + extensão que desenha emojis com imagens da Apple
+    sidebar/       barra lateral, árvore de páginas, lixeira
+    document/      navbar, capa, ícone, título
+    views/         componentes cliente de cada rota
+  lib/             armazenamento, emojis, utilitários
+  store/           stores Zustand
+```
 
-## Deploy on Vercel
+## Emojis da Apple
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Os emojis continuam salvos como texto Unicode. Só a exibição troca o glifo do sistema pela imagem da Apple (`.apple-emoji` em `globals.css`). Assim, copiar, colar e buscar funcionam normalmente.
+As imagens são da Apple; servem para uso pessoal, mas não para distribuir o app publicamente.

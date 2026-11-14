@@ -1,26 +1,93 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #37352f;
+  --sidebar: #f7f7f5;
+  --muted: #787774;
+  --hover: rgba(55, 53, 47, 0.06);
+  --border: rgba(55, 53, 47, 0.09);
+  --accent: #2383e2;
+}
+
+.dark {
+  --background: #191919;
+  --foreground: #d4d4d4;
+  --sidebar: #202020;
+  --muted: #9b9b9b;
+  --hover: rgba(255, 255, 255, 0.055);
+  --border: rgba(255, 255, 255, 0.094);
+  --accent: #529cca;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-sidebar: var(--sidebar);
+  --color-muted: var(--muted);
+  --color-hover: var(--hover);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-inter), ui-sans-serif, -apple-system, "Segoe UI", Helvetica, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+/* BlockNote: deixa o editor herdar o fundo da página */
+.bn-container .bn-editor {
+  background: transparent;
+  padding-inline: 54px;
+}
+
+.bn-container[data-color-scheme] {
+  --bn-colors-editor-background: transparent;
+}
+
+/* Emojis do editor renderizados com as imagens da Apple (ver apple-emoji-extension.ts). */
+.apple-emoji {
+  color: transparent;
+  background-size: 1.15em 1.15em;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.apple-emoji::selection {
+  color: transparent;
+}
+
+/* Barra de título do app nativo: arrastar a janela pelas barras superiores. */
+[data-electron] .titlebar,
+[data-electron] .titlebar-drag {
+  -webkit-app-region: drag;
+}
+
+[data-electron] .titlebar :is(button, a, input, [role="button"]),
+[data-electron] .titlebar-drag :is(button, a, input, [role="button"]) {
+  -webkit-app-region: no-drag;
+}
+
+/* Espaço para os botões nativos (minimizar, maximizar, fechar) no Windows/Linux. */
+[data-electron]:not([data-electron="darwin"]) .titlebar {
+  padding-right: 150px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 8px;
 }

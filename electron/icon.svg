@@ -1,0 +1,18 @@
+<!-- Fonte do ícone do app. Depois de editar, rode `node scripts/make-icon.mjs`.
+     A letra usa a fonte Segoe UI Variable (Windows 11); gere os arquivos numa máquina que a tenha. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1C1C1E"/>
+      <stop offset="1" stop-color="#050505"/>
+    </linearGradient>
+    <linearGradient id="hl" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".10"/>
+      <stop offset=".45" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect x="48" y="48" width="928" height="928" rx="220" fill="url(#bg)"/>
+  <rect x="48" y="48" width="928" height="928" rx="220" fill="url(#hl)"/>
+  <rect x="52" y="52" width="920" height="920" rx="216" fill="none" stroke="#fff" stroke-opacity=".10" stroke-width="6"/>
+  <text x="512" y="512" dy="0.30em" text-anchor="middle" font-family="Segoe UI Variable Display, Segoe UI" font-weight="800" font-size="820" fill="#fff">s</text>
+</svg>

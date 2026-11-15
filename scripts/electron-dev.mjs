@@ -27,20 +27,33 @@ async function waitForServer() {
 
 await waitForServer();
 
-const electron = spawn(electronPath, [root], {
-  cwd: root,
-  stdio: "inherit",
-  env: { ...process.env, SLASH_DEV_URL: DEV_URL },
-});
+// O código 75 é o pedido de reinício do app (ex.: depois de mudar o local dos dados).
+const RESTART_CODE = 75;
+let electron;
+
+function startElectron() {
+  // Terminais do VS Code herdam ELECTRON_RUN_AS_NODE=1, que faz o Electron rodar como Node puro
+  // (sem `app`, `BrowserWindow` etc.). Removemos para abrir o app de verdade.
+  const env = { ...process.env, SLASH_DEV_URL: DEV_URL };
+  delete env.ELECTRON_RUN_AS_NODE;
+  electron = spawn(electronPath, [root], {
+    cwd: root,
+    stdio: "inherit",
+    env,
+  });
+  electron.on("exit", (code) => {
+    if (code === RESTART_CODE) return startElectron();
+    next.kill();
+    process.exit(0);
+  });
+}
+
+startElectron();
 
 const shutdown = () => {
   next.kill();
   electron.kill();
 };
-electron.on("exit", () => {
-  next.kill();
-  process.exit(0);
-});
 next.on("exit", (code) => {
   electron.kill();
   process.exit(code ?? 0);

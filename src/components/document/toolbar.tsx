@@ -9,7 +9,7 @@ import { useDocuments, type Doc } from "@/store/documents";
 import { randomCover } from "./cover";
 import { IconPicker } from "./icon-picker";
 
-const TITLE_CLASS = "pt-2 pb-3 text-[40px] leading-tight font-bold break-words";
+const TITLE_CLASS = "doc-title pt-2 pb-3 text-[40px] leading-tight font-bold break-words";
 
 export function Toolbar({ doc, preview }: { doc: Doc; preview?: boolean }) {
   const update = useDocuments((s) => s.update);

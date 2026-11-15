@@ -4,7 +4,7 @@ import { fileToDataUrl } from "@/lib/utils";
 import { idbStorage } from "./idb-storage";
 
 // No app nativo os dados vão para o disco (pasta de dados no E:, ver electron/main.cjs).
-function backend(): StateStorage | null {
+export function backend(): StateStorage | null {
   if (typeof window === "undefined") return null;
   if (window.slash) {
     return {

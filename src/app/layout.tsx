@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import { ElectronBridge } from "@/components/providers/electron-bridge";
+import { SettingsApplier } from "@/components/providers/settings-applier";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import "./globals.css";
 
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="h-full">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <ElectronBridge />
+          <SettingsApplier />
           {children}
           <Toaster position="bottom-center" />
         </ThemeProvider>

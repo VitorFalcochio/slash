@@ -2,7 +2,7 @@
 
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
-import { filterSuggestionItems, type PartialBlock } from "@blocknote/core";
+import { docToBlocks, filterSuggestionItems, type PartialBlock } from "@blocknote/core";
 import { SuggestionMenu } from "@blocknote/core/extensions";
 import { pt } from "@blocknote/core/locales";
 import { BlockNoteView } from "@blocknote/mantine";
@@ -25,7 +25,8 @@ const COMMAND_HINT = "Pressione Ctrl+Espaço para ver os comandos";
 
 type EditorProps = {
   initialContent?: string;
-  onChange?: (content: string) => void;
+  /** Recebe uma função que gera o JSON do documento; quem chama decide quando rodar (ex.: só na hora de salvar). */
+  onChange?: (serialize: () => string) => void;
   editable?: boolean;
 };
 
@@ -53,7 +54,12 @@ export default function Editor({ initialContent, onChange, editable = true }: Ed
       slashMenu={false}
       emojiPicker={false}
       theme={resolvedTheme === "dark" ? "dark" : "light"}
-      onChange={() => onChange?.(JSON.stringify(editor.document))}
+      onChange={() => {
+        // O documento do ProseMirror é imutável: guardar a referência é instantâneo
+        // e continua válido mesmo depois que o editor fecha.
+        const doc = editor.prosemirrorState.doc;
+        onChange?.(() => JSON.stringify(docToBlocks(doc)));
+      }}
       onKeyDownCapture={(e) => {
         if (editable && e.ctrlKey && e.code === "Space") {
           e.preventDefault();

@@ -4,7 +4,9 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Cover } from "@/components/document/cover";
+import { DocTags } from "@/components/document/doc-tags";
 import { Toolbar } from "@/components/document/toolbar";
+import { usePageContent } from "@/lib/use-page-content";
 import { useDocuments } from "@/store/documents";
 
 const Editor = dynamic(() => import("@/components/editor/editor"), { ssr: false });
@@ -13,6 +15,7 @@ export function PreviewView() {
   const id = useSearchParams().get("id") ?? "";
   const hydrated = useDocuments((s) => s.hydrated);
   const doc = useDocuments((s) => s.docs[id]);
+  const page = usePageContent(id);
 
   if (!hydrated) return null;
 
@@ -30,9 +33,10 @@ export function PreviewView() {
   return (
     <div className="h-full overflow-y-auto pb-40">
       <Cover cover={doc.coverImage} preview />
-      <div className="mx-auto max-w-[900px]">
+      <div className="doc-width mx-auto">
         <Toolbar doc={doc} preview />
-        <Editor key={doc.id} initialContent={doc.content} editable={false} />
+        <DocTags doc={doc} preview />
+        {page.status === "ready" && <Editor key={doc.id} initialContent={page.content} editable={false} />}
       </div>
     </div>
   );

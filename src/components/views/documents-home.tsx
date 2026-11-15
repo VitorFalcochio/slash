@@ -2,16 +2,43 @@
 
 import { Menu, PlusCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import { useDocuments } from "@/store/documents";
+import { useSettings } from "@/store/settings";
 import { useUi } from "@/store/ui";
 import { DocumentView } from "./document-view";
+import { TagView } from "./tag-view";
+
+// "Abrir na última página" só vale uma vez, quando o app abre.
+let startHandled = false;
+
+function lastPageToOpen() {
+  const { startPage, lastPageId } = useSettings.getState();
+  const doc = lastPageId ? useDocuments.getState().docs[lastPageId] : undefined;
+  return startPage === "last" && doc && !doc.isArchived ? doc.id : null;
+}
 
 export function DocumentsHome() {
-  const id = useSearchParams().get("id");
+  const router = useRouter();
+  const params = useSearchParams();
+  const id = params.get("id");
+  const tag = params.get("tag");
   const hydrated = useDocuments((s) => s.hydrated);
+  const settingsHydrated = useSettings((s) => s.hydrated);
+  const ready = hydrated && settingsHydrated;
 
-  if (!hydrated) return null;
+  useEffect(() => {
+    if (!ready || startHandled) return;
+    startHandled = true;
+    const last = !id && !tag ? lastPageToOpen() : null;
+    if (last) router.replace(`/documents?id=${last}`);
+  }, [ready, id, tag, router]);
+
+  if (!ready) return null;
+  // Evita piscar a tela inicial antes de ir para a última página.
+  if (!startHandled && !id && !tag && lastPageToOpen()) return null;
   if (id) return <DocumentView key={id} id={id} />;
+  if (tag) return <TagView key={tag} id={tag} />;
   return <EmptyState />;
 }
 

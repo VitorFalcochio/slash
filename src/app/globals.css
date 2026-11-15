@@ -54,6 +54,31 @@ body {
   --bn-colors-editor-background: transparent;
 }
 
+/* Configurações > Aparência (atributos aplicados no <html> por settings-applier.tsx) */
+[data-font="serif"] :is(.bn-default-styles, .doc-title) {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+}
+
+[data-font="mono"] :is(.bn-default-styles, .doc-title) {
+  font-family: ui-monospace, "Cascadia Code", Consolas, "Courier New", monospace;
+}
+
+[data-font-size="small"] .bn-default-styles {
+  font-size: 14px;
+}
+
+[data-font-size="large"] .bn-default-styles {
+  font-size: 18px;
+}
+
+.doc-width {
+  max-width: 900px;
+}
+
+[data-full-width] .doc-width {
+  max-width: none;
+}
+
 /* Emojis do editor renderizados com as imagens da Apple (ver apple-emoji-extension.ts). */
 .apple-emoji {
   color: transparent;

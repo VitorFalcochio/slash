@@ -9,7 +9,8 @@
     "build": "node scripts/copy-emoji.mjs && next build",
     "start": "electron .",
     "dist": "npm run build && electron-builder --win",
-    "lint": "eslint"
+    "lint": "eslint",
+    "icon": "node scripts/make-icon.mjs"
   },
   "devDependencies": {
     "@blocknote/core": "^0.56.0",
@@ -58,7 +59,7 @@
       "target": [
         "nsis"
       ],
-      "icon": "electron/icon.png"
+      "icon": "electron/icon.ico"
     },
     "nsis": {
       "oneClick": false,

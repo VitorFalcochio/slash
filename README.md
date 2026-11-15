@@ -10,6 +10,7 @@ npm run dev      # Next + Electron com recarregamento automático
 npm run build    # gera a interface estática em out/
 npm start        # abre o Electron usando out/
 npm run dist     # build + instalador Windows em release/
+npm run icon     # regera os ícones a partir de electron/icon.svg
 ```
 
 ## Onde ficam os dados

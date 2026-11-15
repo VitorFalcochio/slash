@@ -7,12 +7,14 @@ import { DocIcon, docTitle } from "@/components/doc-icon";
 import { EmojiText } from "@/components/emoji-text";
 import { Modal } from "@/components/ui/modal";
 import { cn } from "@/lib/utils";
-import { useDocuments } from "@/store/documents";
+import { TagChip } from "@/components/tags/tag-chip";
+import { docTags, useDocuments } from "@/store/documents";
 import { useUi } from "@/store/ui";
 
 export function SearchCommand() {
   const router = useRouter();
   const docs = useDocuments((s) => s.docs);
+  const tags = useDocuments((s) => s.tags);
   const { searchOpen, setSearchOpen } = useUi();
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(0);
@@ -28,9 +30,15 @@ export function SearchCommand() {
     return () => document.removeEventListener("keydown", onKey);
   }, [setSearchOpen]);
 
+  // Encontra pelo título ou pelo nome de uma etiqueta da página ("#" no começo é opcional).
+  const q = query.trim().replace(/^#/, "").toLowerCase();
   const results = Object.values(docs)
     .filter((d) => !d.isArchived)
-    .filter((d) => docTitle(d.title).toLowerCase().includes(query.trim().toLowerCase()))
+    .filter(
+      (d) =>
+        docTitle(d.title).toLowerCase().includes(q) ||
+        docTags(d, tags).some((t) => t.name.toLowerCase().includes(q)),
+    )
     .sort((a, b) => b.updatedAt - a.updatedAt)
     .slice(0, 50);
 
@@ -85,7 +93,10 @@ export function SearchCommand() {
                 className={cn("flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm", i === selected && "bg-hover")}
               >
                 <DocIcon icon={doc.icon} />
-                <span className="truncate"><EmojiText text={docTitle(doc.title)} /></span>
+                <span className="flex-1 truncate"><EmojiText text={docTitle(doc.title)} /></span>
+                {docTags(doc, tags).slice(0, 3).map((t) => (
+                  <TagChip key={t.id} tag={t} />
+                ))}
               </button>
             ))}
           </>

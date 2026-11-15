@@ -1,13 +1,17 @@
 "use client";
 
-import { ChevronsLeft, Plus, PlusCircle, Search, Settings, Trash2 } from "lucide-react";
+import { ChevronsLeft, FolderPlus, Plus, PlusCircle, Search, Settings, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type DragEvent, type ReactNode } from "react";
 import { Popover } from "@/components/ui/popover";
+import { DRAG_FOLDER, dragHas } from "@/lib/dnd";
+import { randomTagColor } from "@/lib/tag-colors";
 import { cn } from "@/lib/utils";
 import { sortDocs, useDocuments } from "@/store/documents";
 import { useUi } from "@/store/ui";
 import { DocItem, DocTree } from "./doc-item";
+import { FolderTree } from "./folder-tree";
+import { TagList } from "./tag-list";
 import { TrashBox } from "./trash-box";
 
 const MIN_WIDTH = 220;
@@ -15,9 +19,10 @@ const MAX_WIDTH = 480;
 
 export function Sidebar() {
   const router = useRouter();
-  const create = useDocuments((s) => s.create);
+  const { create, createFolder, createTag, moveFolder } = useDocuments();
   const docs = useDocuments((s) => s.docs);
-  const { sidebarCollapsed, setSidebarCollapsed, setSearchOpen, setSettingsOpen } = useUi();
+  const { sidebarCollapsed, setSidebarCollapsed, setSearchOpen, setSettingsOpen, setRenamingFolderId } = useUi();
+  const [renamingTagId, setRenamingTagId] = useState<string | null>(null);
   const [width, setWidth] = useState(260);
   const [resizing, setResizing] = useState(false);
   const resizingRef = useRef(false);
@@ -42,6 +47,8 @@ export function Sidebar() {
   }, []);
 
   const onCreate = () => router.push(`/documents?id=${create()}`);
+  const onCreateFolder = () => setRenamingFolderId(createFolder(null));
+  const onCreateTag = () => setRenamingTagId(createTag("Nova etiqueta", randomTagColor()));
 
   return (
     <aside
@@ -54,9 +61,6 @@ export function Sidebar() {
     >
       <div style={{ width }} className="flex h-full flex-col">
       <div className="titlebar-drag flex items-center gap-2 px-3 pt-3 pb-1">
-        <div className="flex size-6 items-center justify-center rounded-md bg-foreground text-sm font-bold text-background">
-          /
-        </div>
         <span className="flex-1 truncate text-sm font-semibold">Slash</span>
         <button
           onClick={() => setSidebarCollapsed(true)}
@@ -87,6 +91,27 @@ export function Sidebar() {
             ))}
           </Section>
         )}
+        <Section
+          title="Organizar"
+          onAdd={onCreateFolder}
+          addLabel="Nova pasta"
+          // Soltar uma pasta no título "Organizar" leva ela de volta para a raiz.
+          onDrop={(e) => {
+            const folderId = e.dataTransfer.getData(DRAG_FOLDER);
+            if (folderId) moveFolder(folderId, null);
+          }}
+          accepts={(e) => dragHas(e, DRAG_FOLDER)}
+        >
+          <FolderTree parentId={null} />
+          <NavButton icon={<FolderPlus />} onClick={onCreateFolder}>
+            Nova pasta
+          </NavButton>
+        </Section>
+
+        <Section title="Etiquetas" onAdd={onCreateTag} addLabel="Nova etiqueta">
+          <TagList renamingId={renamingTagId} setRenamingId={setRenamingTagId} />
+        </Section>
+
         <Section title="Privado" onAdd={onCreate}>
           <DocTree parentId={null} />
           <NavButton icon={<Plus />} onClick={onCreate}>
@@ -124,16 +149,48 @@ export function Sidebar() {
   );
 }
 
-function Section({ title, onAdd, children }: { title: string; onAdd?: () => void; children: ReactNode }) {
+function Section({
+  title,
+  onAdd,
+  addLabel = "Nova página",
+  onDrop,
+  accepts,
+  children,
+}: {
+  title: string;
+  onAdd?: () => void;
+  addLabel?: string;
+  onDrop?: (e: DragEvent) => void;
+  accepts?: (e: DragEvent) => boolean;
+  children: ReactNode;
+}) {
+  const [dropOver, setDropOver] = useState(false);
   return (
     <div className="group/section mt-3">
-      <div className="flex items-center px-2 pb-0.5 text-xs font-medium text-muted">
+      <div
+        onDragOver={(e) => {
+          if (!accepts?.(e)) return;
+          e.preventDefault();
+          setDropOver(true);
+        }}
+        onDragLeave={() => setDropOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDropOver(false);
+          onDrop?.(e);
+        }}
+        className={cn(
+          "flex items-center rounded-md px-2 pb-0.5 text-xs font-medium text-muted",
+          dropOver && "bg-accent/15 ring-1 ring-accent ring-inset",
+        )}
+      >
         <span className="flex-1">{title}</span>
         {onAdd && (
           <button
             onClick={onAdd}
             className="rounded p-0.5 opacity-0 hover:bg-hover group-hover/section:opacity-100"
-            aria-label="Nova página"
+            aria-label={addLabel}
+            title={addLabel}
           >
             <Plus className="size-3.5" />
           </button>

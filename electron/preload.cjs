@@ -12,5 +12,17 @@ contextBridge.exposeInMainWorld("slash", {
     remove: (name) => ipcRenderer.invoke("storage:remove", name),
   },
   saveFile: (name, data) => ipcRenderer.invoke("file:save", name, data),
+  versions: { electron: process.versions.electron, chrome: process.versions.chrome, node: process.versions.node },
+  info: () => ipcRenderer.invoke("app:info"),
+  data: {
+    stats: () => ipcRenderer.invoke("data:stats"),
+    openFolder: () => ipcRenderer.invoke("data:open-folder"),
+    chooseFolder: (title) => ipcRenderer.invoke("data:choose-folder", title),
+    inspect: (dir) => ipcRenderer.invoke("data:inspect", dir),
+    change: (dir, mode) => ipcRenderer.invoke("data:change", dir, mode),
+    backup: () => ipcRenderer.invoke("data:backup"),
+    openBackup: (dir) => ipcRenderer.invoke("data:open-backup", dir),
+  },
+  setSpellcheck: (enabled) => ipcRenderer.send("spellcheck:set", enabled),
   setTheme: (theme) => ipcRenderer.send("theme:set", theme),
 });

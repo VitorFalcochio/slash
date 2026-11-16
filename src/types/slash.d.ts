@@ -39,7 +39,24 @@ interface SlashBridge {
     backup: () => Promise<string | null>;
     openBackup: (dir: string) => Promise<string | null>;
   };
+  updates: {
+    getStatus: () => Promise<SlashUpdateStatus>;
+    /** Procura agora (botão em Configurações → Sobre). */
+    check: () => Promise<SlashUpdateStatus>;
+    /** Fecha o app, instala a versão baixada e abre de novo. */
+    install: () => Promise<boolean>;
+    /** Avisa a cada mudança; devolve a função que para de ouvir. */
+    onStatus: (callback: (status: SlashUpdateStatus) => void) => () => void;
+  };
   setSpellcheck: (enabled: boolean) => void;
+}
+
+/** Estado da atualização automática (electron/updater.cjs). */
+interface SlashUpdateStatus {
+  state: "idle" | "checking" | "available" | "downloading" | "downloaded" | "not-available" | "error" | "disabled";
+  version?: string;
+  percent?: number;
+  message?: string;
 }
 
 interface Window {

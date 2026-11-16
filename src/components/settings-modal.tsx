@@ -10,6 +10,8 @@ import {
   Moon,
   Palette,
   PenLine,
+  RefreshCw,
+  RotateCw,
   Sun,
   X,
   type LucideIcon,
@@ -19,6 +21,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Modal } from "@/components/ui/modal";
 import { flushPageContent } from "@/lib/page-content";
+import { installUpdate, useUpdateStatus } from "@/lib/use-update-status";
 import { cn } from "@/lib/utils";
 import { useDocuments } from "@/store/documents";
 import { ACCENTS, useSettings, type ThemeChoice } from "@/store/settings";
@@ -386,6 +389,7 @@ function AboutSection() {
         </div>
       </div>
       <InfoRow label="Versão" value={info?.version ?? (slash ? "..." : "Navegador")} />
+      {slash && <UpdateRow />}
       <InfoRow label="Páginas" value={`${active}${trashed ? ` (+${trashed} na lixeira)` : ""}`} />
       <InfoRow label="Pastas e etiquetas" value={`${Object.keys(folders).length} pastas · ${Object.keys(tags).length} etiquetas`} />
       {slash && (
@@ -396,6 +400,47 @@ function AboutSection() {
         </>
       )}
     </>
+  );
+}
+
+function updateText(status: SlashUpdateStatus | null) {
+  switch (status?.state) {
+    case "disabled":
+      return "Só funciona no app instalado (.exe).";
+    case "checking":
+      return "Procurando nova versão...";
+    case "available":
+      return `Versão ${status.version} encontrada, baixando...`;
+    case "downloading":
+      return `Baixando a versão ${status.version ?? "nova"}... ${status.percent ?? 0}%`;
+    case "downloaded":
+      return `Versão ${status.version} pronta. Reinicie para instalar.`;
+    case "not-available":
+      return "Você está na versão mais recente.";
+    case "error":
+      return status.message ? `Não foi possível verificar: ${status.message}` : "Não foi possível verificar agora.";
+    default:
+      return "O Slash procura atualizações sozinho e baixa em segundo plano.";
+  }
+}
+
+function UpdateRow() {
+  const status = useUpdateStatus();
+  const state = status?.state;
+  const busy = state === "checking" || state === "available" || state === "downloading";
+
+  return (
+    <Row title="Atualizações" description={updateText(status)}>
+      {state === "downloaded" ? (
+        <Button onClick={() => installUpdate()} icon={<RotateCw />} primary>
+          Reiniciar e atualizar
+        </Button>
+      ) : (
+        <Button onClick={() => window.slash?.updates.check()} disabled={busy || state === "disabled"} icon={<RefreshCw />}>
+          Verificar agora
+        </Button>
+      )}
+    </Row>
   );
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "slash",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
     "dev": "node scripts/electron-dev.mjs",
@@ -8,7 +8,8 @@
     "predev": "node scripts/copy-emoji.mjs",
     "build": "node scripts/copy-emoji.mjs && next build",
     "start": "electron .",
-    "dist": "npm run build && electron-builder --win",
+    "dist": "npm run build && electron-builder --win --publish never",
+    "release": "npm run build && electron-builder --win --publish always",
     "lint": "eslint",
     "icon": "node scripts/make-icon.mjs"
   },
@@ -63,7 +64,19 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
-    }
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "Slash-Setup-${version}.${ext}"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "VitorFalcochio",
+        "repo": "slash",
+        "releaseType": "release"
+      }
+    ]
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.11"
   }
 }

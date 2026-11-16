@@ -23,6 +23,16 @@ contextBridge.exposeInMainWorld("slash", {
     backup: () => ipcRenderer.invoke("data:backup"),
     openBackup: (dir) => ipcRenderer.invoke("data:open-backup", dir),
   },
+  updates: {
+    getStatus: () => ipcRenderer.invoke("update:get-status"),
+    check: () => ipcRenderer.invoke("update:check"),
+    install: () => ipcRenderer.invoke("update:install"),
+    onStatus: (callback) => {
+      const listener = (_e, status) => callback(status);
+      ipcRenderer.on("update:status", listener);
+      return () => ipcRenderer.removeListener("update:status", listener);
+    },
+  },
   setSpellcheck: (enabled) => ipcRenderer.send("spellcheck:set", enabled),
   setTheme: (theme) => ipcRenderer.send("theme:set", theme),
 });

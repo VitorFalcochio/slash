@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import { ElectronBridge } from "@/components/providers/electron-bridge";
 import { SettingsApplier } from "@/components/providers/settings-applier";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { UpdateNotifier } from "@/components/providers/update-notifier";
 import "./globals.css";
 
 const inter = Inter({
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <ElectronBridge />
           <SettingsApplier />
+          <UpdateNotifier />
           {children}
           <Toaster position="bottom-center" />
         </ThemeProvider>

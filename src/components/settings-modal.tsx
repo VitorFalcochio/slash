@@ -14,7 +14,6 @@ import {
   PenLine,
   RefreshCw,
   RotateCw,
-  Sparkles,
   Sun,
   X,
   type LucideIcon,
@@ -23,7 +22,6 @@ import { useTheme } from "next-themes";
 import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Modal } from "@/components/ui/modal";
-import { AI_MODELS, aiBridge } from "@/lib/ai";
 import { useLock } from "@/lib/lock";
 import { flushPageContent } from "@/lib/page-content";
 import { installUpdate, useUpdateStatus } from "@/lib/use-update-status";
@@ -32,12 +30,11 @@ import { useDocuments } from "@/store/documents";
 import { ACCENTS, useSettings, type ThemeChoice } from "@/store/settings";
 import { useUi } from "@/store/ui";
 
-type SectionId = "appearance" | "editor" | "ai" | "security" | "storage" | "shortcuts" | "about";
+type SectionId = "appearance" | "editor" | "security" | "storage" | "shortcuts" | "about";
 
 const SECTIONS: { id: SectionId; label: string; icon: LucideIcon }[] = [
   { id: "appearance", label: "Aparência", icon: Palette },
   { id: "editor", label: "Editor", icon: PenLine },
-  { id: "ai", label: "Assistente IA", icon: Sparkles },
   { id: "security", label: "Segurança", icon: Lock },
   { id: "storage", label: "Armazenamento", icon: HardDrive },
   { id: "shortcuts", label: "Atalhos", icon: Keyboard },
@@ -46,16 +43,7 @@ const SECTIONS: { id: SectionId; label: string; icon: LucideIcon }[] = [
 
 export function SettingsModal() {
   const { settingsOpen, setSettingsOpen } = useUi();
-  const requestedSection = useUi((s) => s.settingsSection);
   const [section, setSection] = useState<SectionId>("appearance");
-
-  // Aberto apontando para uma seção (ex.: "Configurar chave" no assistente).
-  const [handledRequest, setHandledRequest] = useState<string | null>(null);
-  const request = settingsOpen ? requestedSection : null;
-  if (request !== handledRequest) {
-    setHandledRequest(request);
-    if (request && SECTIONS.some((s) => s.id === request)) setSection(request as SectionId);
-  }
 
   // Ctrl+, abre e fecha as configurações.
   useEffect(() => {
@@ -104,7 +92,6 @@ export function SettingsModal() {
         <div className="flex-1 overflow-y-auto px-6 py-2">
           {section === "appearance" && <AppearanceSection />}
           {section === "editor" && <EditorSection />}
-          {section === "ai" && <AiSection />}
           {section === "security" && <SecuritySection />}
           {section === "storage" && <StorageSection />}
           {section === "shortcuts" && <ShortcutsSection />}
@@ -227,106 +214,6 @@ function EditorSection() {
           onChange={(spellcheck) => settings.set({ spellcheck })}
         />
       </Row>
-    </>
-  );
-}
-
-function AiSection() {
-  const bridge = aiBridge();
-  const model = useSettings((s) => s.aiModel);
-  const setSettings = useSettings((s) => s.set);
-  const [status, setStatus] = useState<{ hasKey: boolean; encryptionAvailable: boolean } | null>(null);
-  const [key, setKey] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    bridge?.status().then(setStatus);
-  }, [bridge]);
-
-  if (!bridge) {
-    return <p className="py-6 text-sm text-muted">Disponível no app para desktop.</p>;
-  }
-
-  const save = async () => {
-    setSaving(true);
-    try {
-      await bridge.setKey(key, model);
-      setKey("");
-      setStatus(await bridge.status());
-      toast.success("Chave do Gemini salva");
-    } catch (error) {
-      toast.error(ipcMessage(error));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <>
-      <div className="border-b border-border py-4">
-        <p className="text-sm font-medium">Chave de API do Google Gemini</p>
-        <p className="mt-0.5 text-xs text-muted">
-          {status?.hasKey
-            ? "Conectado. A chave fica guardada criptografada neste computador."
-            : "Crie uma chave no Google AI Studio e cole aqui. O uso é cobrado (ou limitado) na sua conta Google."}
-        </p>
-        <div className="mt-3 flex gap-2">
-          <input
-            type="password"
-            value={key}
-            onChange={(e) => setKey(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && key.trim() && !saving && void save()}
-            placeholder={status?.hasKey ? "Colar uma nova chave para trocar" : "Cole a chave aqui"}
-            className="h-8 min-w-0 flex-1 rounded-md border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-accent/40"
-          />
-          <Button onClick={() => void save()} disabled={!key.trim() || saving} primary>
-            {saving ? "Testando..." : "Salvar"}
-          </Button>
-        </div>
-        <div className="mt-2 flex items-center gap-3 text-xs">
-          <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer" className="text-accent hover:underline">
-            Criar chave no Google AI Studio
-          </a>
-          {status?.hasKey && (
-            <button
-              onClick={async () => {
-                await bridge.clearKey();
-                setStatus(await bridge.status());
-                toast("Chave removida");
-              }}
-              className="text-muted hover:text-red-500"
-            >
-              Remover chave
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="border-b border-border py-4">
-        <p className="text-sm font-medium">Modelo</p>
-        <p className="mt-0.5 text-xs text-muted">Modelos mais fortes respondem melhor, mas são mais lentos e caros.</p>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          {AI_MODELS.map((m) => (
-            <button
-              key={m.id}
-              onClick={() => setSettings({ aiModel: m.id })}
-              className={cn(
-                "rounded-lg border px-3 py-2 text-left transition",
-                model === m.id ? "border-accent bg-accent/5" : "border-border hover:bg-hover",
-              )}
-            >
-              <p className="text-sm font-medium">{m.label}</p>
-              <p className="text-xs text-muted">{m.hint}</p>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <p className="py-4 text-xs text-muted">
-        Ao usar o assistente, o texto das suas páginas é enviado ao Google para gerar a resposta,{" "}
-        <strong>inclusive o das páginas protegidas com senha</strong>. Use <strong>Ctrl+J</strong> para abrir o
-        assistente, ou <strong>Resumir com IA</strong> no menu <strong>…</strong> de uma página.
-      </p>
     </>
   );
 }
@@ -504,7 +391,6 @@ function StorageSection() {
 const SHORTCUTS: { keys: string[]; label: string }[] = [
   { keys: ["Ctrl", "K"], label: "Buscar páginas" },
   { keys: ["Ctrl", ","], label: "Abrir as configurações" },
-  { keys: ["Ctrl", "J"], label: "Abrir o assistente de IA" },
   { keys: ["Ctrl", "Espaço"], label: "Menu de comandos no editor" },
   { keys: [":", "2 letras"], label: "Inserir emoji" },
   { keys: ["Enter"], label: "No título, pula para o texto" },

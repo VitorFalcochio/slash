@@ -1,11 +1,10 @@
 "use client";
 
-import { Check, Copy, Globe, Lock, LockOpen, Menu, MoreHorizontal, Sparkles, Star, Trash2 } from "lucide-react";
+import { Check, Copy, Globe, Lock, LockOpen, Menu, MoreHorizontal, Star, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Fragment, useState } from "react";
 import { toast } from "sonner";
-import { summarizePage } from "@/components/ai/actions";
 import { DocIcon, docTitle } from "@/components/doc-icon";
 import { EmojiText } from "@/components/emoji-text";
 import { toggleProtection } from "@/components/lock/use-protection";
@@ -100,17 +99,6 @@ export function Navbar({ doc }: { doc: Doc }) {
             >
               Copiar link
             </MenuItem>
-            {!doc.isArchived && !(doc.isLocked && !unlocked) && (
-              <MenuItem
-                icon={<Sparkles />}
-                onClick={() => {
-                  summarizePage(doc);
-                  close();
-                }}
-              >
-                Resumir com IA
-              </MenuItem>
-            )}
             <MenuItem
               icon={doc.isLocked ? <LockOpen /> : <Lock />}
               onClick={() => {

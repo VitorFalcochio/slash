@@ -6,7 +6,6 @@ const path = require("node:path");
 const crypto = require("node:crypto");
 const { pathToFileURL } = require("node:url");
 const { setupUpdater } = require("./updater.cjs");
-const { setupAI } = require("./ai.cjs");
 
 // Configuração do app, fora da pasta de dados (é ela que diz onde a pasta de dados está).
 // SLASH_CONFIG_FILE troca o arquivo (usado em testes, para não mexer na configuração real).
@@ -392,7 +391,6 @@ app.whenReady().then(() => {
 
   // Só o app instalado se atualiza; antes de instalar, grava o que estiver pendente.
   setupUpdater({ enabled: app.isPackaged && !DEV_URL, beforeInstall: flushAllWrites });
-  setupAI({ dataDir: DATA_DIR });
 });
 
 if (!app.requestSingleInstanceLock()) {

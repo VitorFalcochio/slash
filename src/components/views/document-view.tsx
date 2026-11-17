@@ -82,7 +82,6 @@ function PageBody({ doc }: { doc: Doc }) {
       {page.status === "ready" && (
         <Editor
           key={doc.id}
-          docId={doc.id}
           initialContent={page.content}
           onChange={(serialize) =>
             // Depois da pausa, grava o arquivo da página e atualiza a data de edição

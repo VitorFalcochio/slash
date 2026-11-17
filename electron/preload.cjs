@@ -36,34 +36,3 @@ contextBridge.exposeInMainWorld("slash", {
   setSpellcheck: (enabled) => ipcRenderer.send("spellcheck:set", enabled),
   setTheme: (theme) => ipcRenderer.send("theme:set", theme),
 });
-
-// Assistente de IA (electron/ai.cjs). Separado de `slash` para a página poder funcionar sem ele.
-contextBridge.exposeInMainWorld("slashAI", {
-  status: () => ipcRenderer.invoke("ai:status"),
-  setKey: (key, model) => ipcRenderer.invoke("ai:set-key", key, model),
-  clearKey: () => ipcRenderer.invoke("ai:clear-key"),
-  generate: (request) => ipcRenderer.invoke("ai:generate", request),
-  stream: (id, request, handlers) => {
-    const onChunk = (_e, reqId, text) => reqId === id && handlers.onChunk(text);
-    const cleanup = () => {
-      ipcRenderer.removeListener("ai:chunk", onChunk);
-      ipcRenderer.removeListener("ai:done", onDone);
-      ipcRenderer.removeListener("ai:error", onError);
-    };
-    const onDone = (_e, reqId) => {
-      if (reqId !== id) return;
-      cleanup();
-      handlers.onDone();
-    };
-    const onError = (_e, reqId, message) => {
-      if (reqId !== id) return;
-      cleanup();
-      handlers.onError(message);
-    };
-    ipcRenderer.on("ai:chunk", onChunk);
-    ipcRenderer.on("ai:done", onDone);
-    ipcRenderer.on("ai:error", onError);
-    return ipcRenderer.invoke("ai:stream", id, request);
-  },
-  cancel: (id) => ipcRenderer.invoke("ai:cancel", id),
-});

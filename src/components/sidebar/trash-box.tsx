@@ -14,10 +14,9 @@ export function TrashBox({ onNavigate }: { onNavigate: () => void }) {
   const { docs, restore, remove } = useDocuments();
   const [query, setQuery] = useState("");
 
-  const archived = Object.values(docs)
-    .filter((d) => d.isArchived)
-    // Mostra só a raiz de cada grupo arquivado; subpáginas vêm junto.
-    .filter((d) => !d.parentId || !docs[d.parentId]?.isArchived)
+  // Só a raiz de cada grupo arquivado; subpáginas vêm junto.
+  const roots = Object.values(docs).filter((d) => d.isArchived && (!d.parentId || !docs[d.parentId]?.isArchived));
+  const archived = roots
     .filter((d) => docTitle(d.title).toLowerCase().includes(query.toLowerCase()))
     .sort((a, b) => b.updatedAt - a.updatedAt);
 
@@ -26,6 +25,15 @@ export function TrashBox({ onNavigate }: { onNavigate: () => void }) {
     remove(id);
     toast.success("Página excluída");
     if (activeId === id) router.push("/documents");
+  };
+
+  // Esvazia tudo, mesmo o que a busca estiver escondendo.
+  const onEmpty = () => {
+    const total = Object.values(docs).filter((d) => d.isArchived).length;
+    if (!confirm(`Excluir permanentemente ${total === 1 ? "1 página" : `${total} páginas`} da lixeira? Essa ação não pode ser desfeita.`)) return;
+    for (const doc of roots) remove(doc.id);
+    toast.success("Lixeira esvaziada");
+    if (activeId && !useDocuments.getState().docs[activeId]) router.push("/documents");
   };
 
   return (
@@ -78,6 +86,17 @@ export function TrashBox({ onNavigate }: { onNavigate: () => void }) {
           </div>
         ))}
       </div>
+      {roots.length > 0 && (
+        <div className="mt-1 border-t border-border pt-1">
+          <button
+            onClick={onEmpty}
+            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-muted hover:bg-hover hover:text-red-500"
+          >
+            <Trash className="size-4" />
+            Esvaziar lixeira
+          </button>
+        </div>
+      )}
     </div>
   );
 }

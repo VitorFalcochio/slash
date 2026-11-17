@@ -77,7 +77,6 @@
     ]
   },
   "dependencies": {
-    "@google/genai": "3.4.0",
     "electron-updater": "^6.8.11"
   }
 }

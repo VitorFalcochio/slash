@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 
@@ -53,6 +53,43 @@ export function Popover({ trigger, children, align = "start", side = "bottom", c
     };
   }, [open]);
 
+  // Mantém o painel dentro da tela: se não couber abaixo do gatilho, abre para cima;
+  // se não couber em lugar nenhum, encosta na borda e passa a rolar. Reavalia quando o
+  // conteúdo muda de tamanho (ex.: submenus de pastas/etiquetas).
+  useLayoutEffect(() => {
+    const panel = panelRef.current;
+    const triggerEl = triggerRef.current;
+    if (!open || !panel || !triggerEl) return;
+    const M = 8;
+    const fit = () => {
+      const t = triggerEl.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const vw = window.innerWidth;
+      panel.style.maxHeight = `${vh - M * 2}px`;
+      const h = panel.offsetHeight;
+      const w = panel.offsetWidth;
+
+      let top: number;
+      if (side === "right") {
+        top = t.bottom - h; // alinhado pela base do gatilho
+      } else {
+        const below = t.bottom + 4;
+        const above = t.top - 4 - h;
+        top = below + h <= vh - M || above < M ? below : above;
+      }
+      top = Math.min(Math.max(M, top), vh - M - h);
+
+      let left = side === "right" ? t.right + 4 : align === "end" ? t.right - w : t.left;
+      left = Math.min(Math.max(M, left), vw - M - w);
+
+      Object.assign(panel.style, { top: `${top}px`, left: `${left}px`, right: "auto", bottom: "auto" });
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(panel);
+    return () => ro.disconnect();
+  }, [open, side, align]);
+
   return (
     <div
       ref={triggerRef}
@@ -71,7 +108,7 @@ export function Popover({ trigger, children, align = "start", side = "bottom", c
             ref={panelRef}
             style={style}
             className={cn(
-              "fixed z-[90] min-w-48 rounded-lg border border-border bg-background p-1 text-foreground shadow-xl",
+              "fixed z-[90] min-w-48 overflow-y-auto rounded-lg border border-border bg-background p-1 text-foreground shadow-xl",
               className,
             )}
           >

@@ -14,9 +14,7 @@ import {
   useCreateBlockNote,
 } from "@blocknote/react";
 import { useTheme } from "next-themes";
-import { useEffect } from "react";
 import { AppleEmoji } from "@/components/apple-emoji";
-import { registerEditor } from "@/lib/editor-registry";
 import { saveUpload } from "@/lib/storage";
 import { AppleEmojiExtension } from "./apple-emoji-extension";
 
@@ -30,11 +28,9 @@ type EditorProps = {
   /** Recebe uma função que gera o JSON do documento; quem chama decide quando rodar (ex.: só na hora de salvar). */
   onChange?: (serialize: () => string) => void;
   editable?: boolean;
-  /** Página deste editor: com ela, o assistente consegue inserir texto aqui (ver lib/editor-registry.ts). */
-  docId?: string;
 };
 
-export default function Editor({ initialContent, onChange, editable = true, docId }: EditorProps) {
+export default function Editor({ initialContent, onChange, editable = true }: EditorProps) {
   const { resolvedTheme } = useTheme();
 
   const editor = useCreateBlockNote({
@@ -50,8 +46,6 @@ export default function Editor({ initialContent, onChange, editable = true, docI
     uploadFile: saveUpload,
     extensions: [AppleEmojiExtension],
   });
-
-  useEffect(() => (docId && editable ? registerEditor(docId, editor) : undefined), [docId, editable, editor]);
 
   return (
     <BlockNoteView

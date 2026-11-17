@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, ChevronsLeft, FolderPlus, Plus, PlusCircle, Search, Settings, Trash2 } from "lucide-react";
+import { CalendarDays, ChevronsLeft, Sparkles, FolderPlus, Plus, PlusCircle, Search, Settings, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type DragEvent, type ReactNode } from "react";
 import { agendaUrl } from "@/components/agenda/agenda-view";
@@ -22,7 +22,7 @@ export function Sidebar() {
   const router = useRouter();
   const { create, createFolder, createTag, moveFolder } = useDocuments();
   const docs = useDocuments((s) => s.docs);
-  const { sidebarCollapsed, setSidebarCollapsed, setSearchOpen, setSettingsOpen, setRenamingFolderId } = useUi();
+  const { sidebarCollapsed, setSidebarCollapsed, setSearchOpen, setSettingsOpen, setRenamingFolderId, setAssistantOpen } = useUi();
   const [renamingTagId, setRenamingTagId] = useState<string | null>(null);
   const [width, setWidth] = useState(260);
   const [resizing, setResizing] = useState(false);
@@ -78,6 +78,9 @@ export function Sidebar() {
         </NavButton>
         <NavButton icon={<CalendarDays />} onClick={() => router.push(agendaUrl())}>
           Agenda
+        </NavButton>
+        <NavButton icon={<Sparkles />} onClick={() => setAssistantOpen(!useUi.getState().assistantOpen)} hint="Ctrl J">
+          Assistente
         </NavButton>
         <NavButton icon={<Settings />} onClick={() => setSettingsOpen(true)}>
           Configurações

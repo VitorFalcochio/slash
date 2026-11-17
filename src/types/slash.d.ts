@@ -59,6 +59,35 @@ interface SlashUpdateStatus {
   message?: string;
 }
 
+/** Assistente de IA (electron/ai.cjs, exposto como window.slashAI). */
+interface SlashAIMessage {
+  role: "user" | "assistant";
+  text: string;
+}
+
+interface SlashAIRequest {
+  model: string;
+  system: string;
+  messages: SlashAIMessage[];
+  /** JSON Schema: a resposta vem como JSON que segue este formato. */
+  schema?: object;
+}
+
+interface SlashAIBridge {
+  status: () => Promise<{ hasKey: boolean; encryptionAvailable: boolean }>;
+  /** Testa a chave e guarda criptografada. Lança erro com mensagem em português se não funcionar. */
+  setKey: (key: string, model: string) => Promise<boolean>;
+  clearKey: () => Promise<boolean>;
+  generate: (request: SlashAIRequest) => Promise<string>;
+  stream: (
+    id: string,
+    request: Omit<SlashAIRequest, "schema">,
+    handlers: { onChunk: (text: string) => void; onDone: () => void; onError: (message: string) => void },
+  ) => Promise<boolean>;
+  cancel: (id: string) => Promise<boolean>;
+}
+
 interface Window {
   slash?: SlashBridge;
+  slashAI?: SlashAIBridge;
 }

@@ -34,6 +34,8 @@ type Settings = {
   /** Senha mestra das páginas protegidas: só o sal e o hash PBKDF2 (ver lib/lock.ts). */
   lockSalt: string | null;
   lockHash: string | null;
+  /** Modelo do Gemini usado pelo assistente (ver lib/ai.ts). */
+  aiModel: string;
 };
 
 type SettingsState = Settings & {
@@ -52,6 +54,7 @@ const DEFAULTS: Settings = {
   spellcheck: true,
   lockSalt: null,
   lockHash: null,
+  aiModel: "gemini-3.8-flash",
 };
 
 export const useSettings = create<SettingsState>()(

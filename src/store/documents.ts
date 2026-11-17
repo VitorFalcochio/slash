@@ -18,6 +18,8 @@ export type Doc = {
   content?: string;
   /** Etiquetas aplicadas na página. */
   tagIds?: string[];
+  /** Pede a senha mestra antes de mostrar o conteúdo (ver lib/lock.ts). */
+  isLocked?: boolean;
   isArchived: boolean;
   isPublished: boolean;
   isFavorite: boolean;

@@ -1,6 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { AutoLock } from "@/components/lock/auto-lock";
+import { PasswordDialog } from "@/components/lock/password-dialog";
 import { SearchCommand } from "@/components/search-command";
 import { SettingsModal } from "@/components/settings-modal";
 import { Sidebar } from "@/components/sidebar/sidebar";
@@ -16,6 +18,8 @@ export function DocumentsShell({ children }: { children: ReactNode }) {
       <main className="h-full flex-1 overflow-y-auto">{children}</main>
       {hydrated && <SearchCommand />}
       <SettingsModal />
+      <PasswordDialog />
+      <AutoLock />
     </div>
   );
 }

@@ -1,13 +1,15 @@
 "use client";
 
-import { Check, Copy, Globe, Menu, MoreHorizontal, Star, Trash2 } from "lucide-react";
+import { Check, Copy, Globe, Lock, LockOpen, Menu, MoreHorizontal, Star, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Fragment, useState } from "react";
 import { toast } from "sonner";
 import { DocIcon, docTitle } from "@/components/doc-icon";
 import { EmojiText } from "@/components/emoji-text";
+import { toggleProtection } from "@/components/lock/use-protection";
 import { MenuItem, Popover } from "@/components/ui/popover";
+import { useLock } from "@/lib/lock";
 import { cn } from "@/lib/utils";
 import { useDocuments, type Doc } from "@/store/documents";
 import { useUi } from "@/store/ui";
@@ -28,6 +30,7 @@ export function Navbar({ doc }: { doc: Doc }) {
   const { update, archive } = useDocuments();
   const { sidebarCollapsed, setSidebarCollapsed } = useUi();
   const chain = useAncestors(doc);
+  const unlocked = useLock((s) => s.unlocked);
 
   return (
     <nav className="titlebar sticky top-0 z-40 flex h-11 items-center gap-1 bg-background px-3 text-sm">
@@ -55,6 +58,16 @@ export function Navbar({ doc }: { doc: Doc }) {
       <span className="hidden px-2 text-xs text-muted sm:block">
         Editado {new Date(doc.updatedAt).toLocaleDateString("pt-BR", { day: "numeric", month: "short" })}
       </span>
+
+      {doc.isLocked && unlocked && (
+        <button
+          onClick={() => useLock.getState().lock()}
+          className="flex items-center gap-1.5 rounded px-2 py-1 text-muted hover:bg-hover hover:text-foreground"
+          title="Bloquear todas as páginas protegidas agora"
+        >
+          <LockOpen className="size-3.5" /> Bloquear
+        </button>
+      )}
 
       {!doc.isArchived && <PublishButton doc={doc} />}
 
@@ -85,6 +98,15 @@ export function Navbar({ doc }: { doc: Doc }) {
               }}
             >
               Copiar link
+            </MenuItem>
+            <MenuItem
+              icon={doc.isLocked ? <LockOpen /> : <Lock />}
+              onClick={() => {
+                toggleProtection(doc);
+                close();
+              }}
+            >
+              {doc.isLocked ? "Remover senha" : "Proteger com senha"}
             </MenuItem>
             {!doc.isArchived && (
               <MenuItem

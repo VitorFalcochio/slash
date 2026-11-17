@@ -6,6 +6,8 @@ import {
   Folder as FolderIcon,
   FolderMinus,
   FolderPlus,
+  Lock,
+  LockOpen,
   MoreHorizontal,
   Plus,
   Star,
@@ -18,6 +20,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { DocIcon, docTitle } from "@/components/doc-icon";
 import { EmojiText } from "@/components/emoji-text";
+import { toggleProtection } from "@/components/lock/use-protection";
 import { TagPicker } from "@/components/tags/tag-picker";
 import { MenuItem, Popover } from "@/components/ui/popover";
 import { DRAG_DOC } from "@/lib/dnd";
@@ -96,6 +99,9 @@ export function DocItem({
           <DocIcon icon={doc.icon} />
         </span>
         <span className="flex-1 truncate"><EmojiText text={docTitle(doc.title)} /></span>
+        {doc.isLocked && (
+          <Lock className="size-3 shrink-0 text-muted group-hover:hidden" aria-label="Protegida com senha" />
+        )}
 
         <div className="flex items-center opacity-0 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
           <Popover
@@ -186,6 +192,15 @@ function DocMenu({
       <MenuItem icon={<TagIcon />} onClick={() => setView("tags")}>
         <span className="flex-1">Etiquetas</span>
         <ChevronRight className="size-4 text-muted" />
+      </MenuItem>
+      <MenuItem
+        icon={doc.isLocked ? <LockOpen /> : <Lock />}
+        onClick={() => {
+          toggleProtection(doc);
+          close();
+        }}
+      >
+        {doc.isLocked ? "Remover senha" : "Proteger com senha"}
       </MenuItem>
       {folderId && (
         <MenuItem

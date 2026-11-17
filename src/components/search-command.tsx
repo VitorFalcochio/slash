@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Lock, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { DocIcon, docTitle } from "@/components/doc-icon";
@@ -94,6 +94,7 @@ export function SearchCommand() {
               >
                 <DocIcon icon={doc.icon} />
                 <span className="flex-1 truncate"><EmojiText text={docTitle(doc.title)} /></span>
+                {doc.isLocked && <Lock className="size-3.5 shrink-0 text-muted" aria-label="Protegida com senha" />}
                 {docTags(doc, tags).slice(0, 3).map((t) => (
                   <TagChip key={t.id} tag={t} />
                 ))}

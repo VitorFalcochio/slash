@@ -6,6 +6,8 @@ import {
   HardDrive,
   Info,
   Keyboard,
+  KeyRound,
+  Lock,
   Monitor,
   Moon,
   Palette,
@@ -20,6 +22,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Modal } from "@/components/ui/modal";
+import { useLock } from "@/lib/lock";
 import { flushPageContent } from "@/lib/page-content";
 import { installUpdate, useUpdateStatus } from "@/lib/use-update-status";
 import { cn } from "@/lib/utils";
@@ -27,11 +30,12 @@ import { useDocuments } from "@/store/documents";
 import { ACCENTS, useSettings, type ThemeChoice } from "@/store/settings";
 import { useUi } from "@/store/ui";
 
-type SectionId = "appearance" | "editor" | "storage" | "shortcuts" | "about";
+type SectionId = "appearance" | "editor" | "security" | "storage" | "shortcuts" | "about";
 
 const SECTIONS: { id: SectionId; label: string; icon: LucideIcon }[] = [
   { id: "appearance", label: "Aparência", icon: Palette },
   { id: "editor", label: "Editor", icon: PenLine },
+  { id: "security", label: "Segurança", icon: Lock },
   { id: "storage", label: "Armazenamento", icon: HardDrive },
   { id: "shortcuts", label: "Atalhos", icon: Keyboard },
   { id: "about", label: "Sobre", icon: Info },
@@ -88,6 +92,7 @@ export function SettingsModal() {
         <div className="flex-1 overflow-y-auto px-6 py-2">
           {section === "appearance" && <AppearanceSection />}
           {section === "editor" && <EditorSection />}
+          {section === "security" && <SecuritySection />}
           {section === "storage" && <StorageSection />}
           {section === "shortcuts" && <ShortcutsSection />}
           {section === "about" && <AboutSection />}
@@ -209,6 +214,59 @@ function EditorSection() {
           onChange={(spellcheck) => settings.set({ spellcheck })}
         />
       </Row>
+    </>
+  );
+}
+
+function SecuritySection() {
+  const hasPassword = useSettings((s) => Boolean(s.lockHash && s.lockSalt));
+  const unlocked = useLock((s) => s.unlocked);
+  const docs = useDocuments((s) => s.docs);
+  const setPasswordDialog = useUi((s) => s.setPasswordDialog);
+  const protectedCount = Object.values(docs).filter((d) => d.isLocked && !d.isArchived).length;
+
+  return (
+    <>
+      <Row
+        title="Senha mestra"
+        description={
+          hasPassword
+            ? "Pedida para abrir qualquer página protegida."
+            : "Crie uma senha para poder proteger páginas. Também é criada na primeira vez que você protege uma página."
+        }
+      >
+        <Button
+          onClick={() => setPasswordDialog({ mode: hasPassword ? "change" : "create" })}
+          icon={<KeyRound />}
+          primary={!hasPassword}
+        >
+          {hasPassword ? "Alterar senha" : "Criar senha"}
+        </Button>
+      </Row>
+
+      {hasPassword && (
+        <Row
+          title="Páginas protegidas"
+          description={
+            unlocked
+              ? "Desbloqueadas agora. Voltam a bloquear após 5 minutos sem uso."
+              : "Bloqueadas. A senha é pedida ao abrir cada uma."
+          }
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-muted tabular-nums">{protectedCount}</span>
+            <Button onClick={() => useLock.getState().lock()} disabled={!unlocked} icon={<Lock />}>
+              Bloquear agora
+            </Button>
+          </div>
+        </Row>
+      )}
+
+      <p className="py-4 text-xs text-muted">
+        Para proteger uma página, abra o menu <strong>…</strong> dela (no topo da página ou na barra lateral) e escolha{" "}
+        <strong>Proteger com senha</strong>. A proteção impede que outras pessoas vejam a página pelo Slash; os
+        arquivos na pasta de dados não são criptografados.
+      </p>
     </>
   );
 }

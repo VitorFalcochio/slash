@@ -6,6 +6,8 @@ import { useSearchParams } from "next/navigation";
 import { Cover } from "@/components/document/cover";
 import { DocTags } from "@/components/document/doc-tags";
 import { Toolbar } from "@/components/document/toolbar";
+import { LockScreen } from "@/components/lock/lock-screen";
+import { useLock } from "@/lib/lock";
 import { usePageContent } from "@/lib/use-page-content";
 import { useDocuments } from "@/store/documents";
 
@@ -16,6 +18,7 @@ export function PreviewView() {
   const hydrated = useDocuments((s) => s.hydrated);
   const doc = useDocuments((s) => s.docs[id]);
   const page = usePageContent(id);
+  const unlocked = useLock((s) => s.unlocked);
 
   if (!hydrated) return null;
 
@@ -32,11 +35,17 @@ export function PreviewView() {
 
   return (
     <div className="h-full overflow-y-auto pb-40">
-      <Cover cover={doc.coverImage} preview />
+      {!(doc.isLocked && !unlocked) && <Cover cover={doc.coverImage} preview />}
       <div className="doc-width mx-auto">
         <Toolbar doc={doc} preview />
-        <DocTags doc={doc} preview />
-        {page.status === "ready" && <Editor key={doc.id} initialContent={page.content} editable={false} />}
+        {doc.isLocked && !unlocked ? (
+          <LockScreen />
+        ) : (
+          <>
+            <DocTags doc={doc} preview />
+            {page.status === "ready" && <Editor key={doc.id} initialContent={page.content} editable={false} />}
+          </>
+        )}
       </div>
     </div>
   );

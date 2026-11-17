@@ -31,6 +31,9 @@ type Settings = {
   startPage: "home" | "last";
   lastPageId: string | null;
   spellcheck: boolean;
+  /** Senha mestra das páginas protegidas: só o sal e o hash PBKDF2 (ver lib/lock.ts). */
+  lockSalt: string | null;
+  lockHash: string | null;
 };
 
 type SettingsState = Settings & {
@@ -47,6 +50,8 @@ const DEFAULTS: Settings = {
   startPage: "last",
   lastPageId: null,
   spellcheck: true,
+  lockSalt: null,
+  lockHash: null,
 };
 
 export const useSettings = create<SettingsState>()(

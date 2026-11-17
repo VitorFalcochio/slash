@@ -35,9 +35,12 @@ export function Popover({ trigger, children, align = "start", side = "bottom", c
   useEffect(() => {
     if (!open) return;
     const close = () => setStyle(null);
+    // Usa o caminho do clique registrado na hora do evento: se o elemento clicado sair da tela durante
+    // o clique, `contains(e.target)` daria falso e o painel fecharia sem motivo.
     const onPointer = (e: PointerEvent) => {
-      const target = e.target as Node;
-      if (!panelRef.current?.contains(target) && !triggerRef.current?.contains(target)) close();
+      const path = e.composedPath();
+      const inside = [panelRef.current, triggerRef.current].some((el) => el && path.includes(el));
+      if (!inside) close();
     };
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
     document.addEventListener("pointerdown", onPointer);
@@ -51,7 +54,16 @@ export function Popover({ trigger, children, align = "start", side = "bottom", c
   }, [open]);
 
   return (
-    <div ref={triggerRef} onClick={toggle} className={block ? "flex w-full" : "inline-flex"}>
+    <div
+      ref={triggerRef}
+      // O painel fica num portal, mas no React os cliques dentro dele sobem até aqui:
+      // sem esta checagem, qualquer clique no painel (ex.: categorias do seletor de emoji) o fecharia.
+      onClick={(e) => {
+        if (panelRef.current && e.nativeEvent.composedPath().includes(panelRef.current)) return;
+        toggle();
+      }}
+      className={block ? "flex w-full" : "inline-flex"}
+    >
       {trigger}
       {open &&
         createPortal(

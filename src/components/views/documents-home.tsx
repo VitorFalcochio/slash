@@ -3,6 +3,7 @@
 import { Menu, PlusCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
+import { AgendaView } from "@/components/agenda/agenda-view";
 import { useDocuments } from "@/store/documents";
 import { useSettings } from "@/store/settings";
 import { useUi } from "@/store/ui";
@@ -23,6 +24,7 @@ export function DocumentsHome() {
   const params = useSearchParams();
   const id = params.get("id");
   const tag = params.get("tag");
+  const view = params.get("view");
   const hydrated = useDocuments((s) => s.hydrated);
   const settingsHydrated = useSettings((s) => s.hydrated);
   const ready = hydrated && settingsHydrated;
@@ -30,15 +32,16 @@ export function DocumentsHome() {
   useEffect(() => {
     if (!ready || startHandled) return;
     startHandled = true;
-    const last = !id && !tag ? lastPageToOpen() : null;
+    const last = !id && !tag && !view ? lastPageToOpen() : null;
     if (last) router.replace(`/documents?id=${last}`);
-  }, [ready, id, tag, router]);
+  }, [ready, id, tag, view, router]);
 
   if (!ready) return null;
   // Evita piscar a tela inicial antes de ir para a última página.
-  if (!startHandled && !id && !tag && lastPageToOpen()) return null;
+  if (!startHandled && !id && !tag && !view && lastPageToOpen()) return null;
   if (id) return <DocumentView key={id} id={id} />;
   if (tag) return <TagView key={tag} id={tag} />;
+  if (view === "agenda") return <AgendaView />;
   return <EmptyState />;
 }
 

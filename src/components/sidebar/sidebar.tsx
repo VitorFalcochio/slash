@@ -1,8 +1,9 @@
 "use client";
 
-import { ChevronsLeft, FolderPlus, Plus, PlusCircle, Search, Settings, Trash2 } from "lucide-react";
+import { CalendarDays, ChevronsLeft, FolderPlus, Plus, PlusCircle, Search, Settings, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type DragEvent, type ReactNode } from "react";
+import { agendaUrl } from "@/components/agenda/agenda-view";
 import { Popover } from "@/components/ui/popover";
 import { DRAG_FOLDER, dragHas } from "@/lib/dnd";
 import { randomTagColor } from "@/lib/tag-colors";
@@ -74,6 +75,9 @@ export function Sidebar() {
       <div className="px-1.5 py-1">
         <NavButton icon={<Search />} onClick={() => setSearchOpen(true)} hint="Ctrl K">
           Buscar
+        </NavButton>
+        <NavButton icon={<CalendarDays />} onClick={() => router.push(agendaUrl())}>
+          Agenda
         </NavButton>
         <NavButton icon={<Settings />} onClick={() => setSettingsOpen(true)}>
           Configurações

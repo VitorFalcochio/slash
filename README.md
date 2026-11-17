@@ -27,17 +27,20 @@ com "Reiniciar agora". Se ignorar, instala quando o app for fechado. Também dá
 ### Publicar uma versão nova
 
 1. Aumente a `version` no `package.json` (ex.: `0.1.0` → `0.2.0`). **Sem isso o app não vê a atualização.**
-2. Crie um token no GitHub (Settings → Developer settings → Personal access tokens → *Fine-grained*,
+2. Faça commit e **push** (a tag do release aponta para o commit atual, que precisa estar no GitHub).
+3. Crie um token no GitHub (Settings → Developer settings → Personal access tokens → *Fine-grained*,
    só o repositório `slash`, permissão **Contents: Read and write**).
-3. No PowerShell:
+4. No PowerShell:
 
    ```powershell
    $env:GH_TOKEN = "seu_token"
    npm.cmd run release
    ```
 
-Isso envia para o GitHub o `Slash-Setup-<versão>.exe`, o `.blockmap` e o `latest.yml` (é esse arquivo
-que o app lê para saber se existe versão nova). O repositório precisa continuar **público** para o
+O `electron-builder` só gera os arquivos em `release/`; quem publica é o `scripts/publish-github.mjs`.
+Ele cria o release como rascunho, envia o `Slash-Setup-<versão>.exe`, o `.blockmap` e o `latest.yml`
+(é esse arquivo que o app lê para saber se existe versão nova) e só então publica — assim o app nunca
+vê um release pela metade. O repositório precisa continuar **público** para o
 app conseguir baixar sem senha.
 
 O instalador não é assinado digitalmente, então na primeira instalação o Windows SmartScreen pode
